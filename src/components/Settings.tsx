@@ -1,7 +1,6 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import Divider from "@mui/material/Divider";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -44,7 +43,7 @@ type Props = {
   setOpen: Function;
   children?: React.ReactNode;
 };
-export default function SettingsDialog({ open, setOpen, children }: Props) {
+export default function SettingsDialog({ open, setOpen }: Props) {
   const [corsAnywhereURL, setCorsAnywhereURL] = React.useState<string>(
     "https://cors.yourcf.workers.dev"
   );

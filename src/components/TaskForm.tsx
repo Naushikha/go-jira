@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useRef, useReducer } from "react";
+import React, { useState, useRef, useReducer } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -8,11 +8,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import {
   TextField,
-  MenuItem,
-  Select,
   InputLabel,
-  FormControl,
-  Container,
   Typography,
   Box,
   Button,
@@ -109,7 +105,6 @@ const TaskForm: React.FC = () => {
   const [jiraAPIKey, setJiraAPIKey] = React.useState<string>("YOURKEYHERE");
   const [taskData, setTaskData] = useState<TaskDataItem[]>([]);
   const [jiraTasks, setJiraTasks] = React.useState<JiraTask[]>([]);
-  const [taskUpdateMode, setTaskUpdateMode] = useState<boolean>(false);
   const [settingsVisible, setSettingsVisible] = useState<boolean>(false);
   const [statusLogVisible, setStatusLogVisible] = useState<boolean>(false);
   const [submissionInProgress, setSubmissionInProgress] =
@@ -293,6 +288,7 @@ const TaskForm: React.FC = () => {
   };
 
   const handleHoursChange = (event: Event, newValue: number | number[]) => {
+    console.log(event);
     setHours(newValue as number);
   };
 
@@ -422,7 +418,7 @@ const TaskForm: React.FC = () => {
               onClick={() => saveTask()}
             >
               <AddTaskIcon sx={{ p: 1 }} />
-              {taskUpdateMode ? "Update Task" : "Add Task"}
+              Add Task
             </Button>
           </Grid>
         </Grid>

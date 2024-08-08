@@ -24,12 +24,7 @@ type Props = {
   statusLog: string;
   children?: React.ReactNode;
 };
-export default function StatusLogDialog({
-  open,
-  setOpen,
-  statusLog,
-  children,
-}: Props) {
+export default function StatusLogDialog({ open, setOpen, statusLog }: Props) {
   return (
     <React.Fragment>
       <Dialog
