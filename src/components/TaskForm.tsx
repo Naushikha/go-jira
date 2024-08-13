@@ -164,11 +164,15 @@ const TaskForm: React.FC = () => {
   };
 
   // Add a worklog to a Jira item
-  const addWorklogToJiraItem = async (issueId: string, hours: number) => {
+  const addWorklogToJiraItem = async (
+    issueId: string,
+    date: string,
+    hours: number
+  ) => {
     const headers = getJiraAPIHeaders();
     log(`Adding worklog to Jira Issue ${issueId}: ${hours} hours`);
     const worklogData = {
-      comment: `Worked ${hours}h on this issue`,
+      comment: `Worked ${hours}h on ${date}`,
       timeSpent: `${hours}h`,
     };
 
@@ -305,14 +309,16 @@ const TaskForm: React.FC = () => {
     setStatusLogVisible(true);
     log("Started task data submission to JIRA");
     for (let taskDataItem of taskData) {
-      const comment = `*Update ${taskDataItem.date.year()}/${String(
+      const date = `${taskDataItem.date.year()}/${String(
         taskDataItem.date.month() + 1
-      ).padStart(2, "0")}/${String(taskDataItem.date.date()).padStart(
-        2,
-        "0"
-      )}:*\n${taskDataItem.workDescriptionMarkdown}`;
+      ).padStart(2, "0")}/${String(taskDataItem.date.date()).padStart(2, "0")}`;
+      const comment = `*Update ${date}:*\n${taskDataItem.workDescriptionMarkdown}`;
       await addCommentToJiraItem(taskDataItem.task.key, comment);
-      await addWorklogToJiraItem(taskDataItem.task.key, taskDataItem.hours);
+      await addWorklogToJiraItem(
+        taskDataItem.task.key,
+        date,
+        taskDataItem.hours
+      );
     }
     setSubmissionInProgress(false);
     setTaskData([]);
