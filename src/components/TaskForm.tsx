@@ -192,9 +192,7 @@ const TaskForm: React.FC = () => {
     hours: number
   ) => {
     const headers = getJiraAPIHeaders();
-    const date = `${taskDataDate.year()}/${String(
-      taskDataDate.month() + 1
-    ).padStart(2, "0")}/${String(taskDataDate.date()).padStart(2, "0")}`;
+    const date = taskDataDate.format("YYYY/MM/DD");
     log(`Adding worklog to Jira Issue ${issueId}: ${hours} hours`);
     const utcDate = taskDataDate.format();
     let jiraAPIDate =
@@ -254,6 +252,31 @@ const TaskForm: React.FC = () => {
     if (statusLog) {
       statusLog?.lastElementChild?.scrollIntoView();
     }
+  };
+
+  const pPrint = () => {
+    let printContent = "";
+    const tasksByDate = taskData.reduce((acc: any, taskDataItem) => {
+      const dateKey = taskDataItem.date.format("YYYY/MM/DD"); // Format the date as a string
+      if (!acc[dateKey]) {
+        acc[dateKey] = []; // Initialize an array if the key doesn't exist
+      }
+      acc[dateKey].push(taskDataItem);
+      return acc;
+    }, {});
+
+    // Output the dictionary
+    Object.keys(tasksByDate)
+      .sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1)) // Sort the keys (dates) chronologically
+      .forEach((dateKey) => {
+        printContent += `<h1 style='font-size:26.5px;font-weight:normal;'>Updates on ${dateKey}</h1>`;
+        tasksByDate[dateKey].forEach((taskDataItem: TaskDataItem) => {
+          printContent += `<b><pre>${taskDataItem.task.key}\t${taskDataItem.task.title}</pre></b>`;
+          printContent += `${taskDataItem.workDescription}`;
+        });
+      });
+    let printWindow = window.open("", "", "height=600,width=800");
+    if (printWindow) printWindow.document.write(printContent);
   };
 
   const saveTask = () => {
@@ -363,9 +386,7 @@ const TaskForm: React.FC = () => {
     setStatusLogVisible(true);
     log("Started task data submission to JIRA");
     for (let taskDataItem of taskData) {
-      const date = `${taskDataItem.date.year()}/${String(
-        taskDataItem.date.month() + 1
-      ).padStart(2, "0")}/${String(taskDataItem.date.date()).padStart(2, "0")}`;
+      const date = taskDataItem.date.format("YYYY/MM/DD");
       const comment = `*Update ${date}:*\n${taskDataItem.workDescriptionMarkdown}`;
       await addCommentToJiraItem(taskDataItem.task.key, comment);
       await addWorklogToJiraItem(
@@ -561,7 +582,11 @@ const TaskForm: React.FC = () => {
         </Grid>
         <Grid item container direction="column" xs={1}>
           <Box sx={{ m: 0.5 }}>
-            <Button variant="contained" color="primary">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => pPrint()}
+            >
               <PrintIcon sx={{ p: 1 }} />
               P-Print
             </Button>
