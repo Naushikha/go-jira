@@ -47,7 +47,7 @@ import {
 import "./TaskForm.css";
 import StatusLogDialog from "./StatusLog";
 import Swal from "sweetalert2";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const hourMarks = [
   {
@@ -155,10 +155,32 @@ const TaskForm: React.FC = () => {
         commentData,
         { headers: headers }
       );
-      log(`Comment added successfully: <br/> ${JSON.stringify(response.data)}`);
+      log(
+        `Comment added successfully: <br/> <pre>${JSON.stringify(
+          response.data,
+          undefined,
+          2
+        )}</pre>`
+      );
     } catch (error) {
-      if (error instanceof Error) {
-        log(`Error adding comment: <br/> ${JSON.stringify(error)}`);
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          log(
+            `Error adding comment: <br/> <pre>${JSON.stringify(
+              error.response,
+              undefined,
+              2
+            )}</pre>`
+          );
+        } else {
+          log(
+            `Error adding comment: <br/> <pre>${JSON.stringify(
+              error,
+              undefined,
+              2
+            )}</pre>`
+          );
+        }
       }
     }
   };
@@ -166,13 +188,23 @@ const TaskForm: React.FC = () => {
   // Add a worklog to a Jira item
   const addWorklogToJiraItem = async (
     issueId: string,
-    date: string,
+    taskDataDate: Dayjs,
     hours: number
   ) => {
     const headers = getJiraAPIHeaders();
+    const date = `${taskDataDate.year()}/${String(
+      taskDataDate.month() + 1
+    ).padStart(2, "0")}/${String(taskDataDate.date()).padStart(2, "0")}`;
     log(`Adding worklog to Jira Issue ${issueId}: ${hours} hours`);
+    const utcDate = taskDataDate.format();
+    let jiraAPIDate =
+      utcDate.slice(0, utcDate.lastIndexOf(":")) +
+      utcDate.slice(utcDate.lastIndexOf(":") + 1);
+    jiraAPIDate =
+      jiraAPIDate.split("+")[0] + ".000+" + jiraAPIDate.split("+")[1];
     const worklogData = {
       comment: `Worked ${hours}h on ${date}`,
+      started: jiraAPIDate,
       timeSpent: `${hours}h`,
     };
 
@@ -182,10 +214,32 @@ const TaskForm: React.FC = () => {
         worklogData,
         { headers: headers }
       );
-      log(`Worklog added successfully: <br/> ${JSON.stringify(response.data)}`);
+      log(
+        `Worklog added successfully: <br/> <pre>${JSON.stringify(
+          response.data,
+          undefined,
+          2
+        )}</pre>`
+      );
     } catch (error) {
-      if (error instanceof Error) {
-        log(`Error adding worklog: <br/> ${JSON.stringify(error)}`);
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          log(
+            `Error adding worklog: <br/> <pre>${JSON.stringify(
+              error.response,
+              undefined,
+              2
+            )}</pre>`
+          );
+        } else {
+          log(
+            `Error adding worklog: <br/> <pre>${JSON.stringify(
+              error,
+              undefined,
+              2
+            )}</pre>`
+          );
+        }
       }
     }
   };
@@ -316,7 +370,7 @@ const TaskForm: React.FC = () => {
       await addCommentToJiraItem(taskDataItem.task.key, comment);
       await addWorklogToJiraItem(
         taskDataItem.task.key,
-        date,
+        taskDataItem.date,
         taskDataItem.hours
       );
     }
@@ -461,10 +515,7 @@ const TaskForm: React.FC = () => {
                 </TableHead>
                 <TableBody>
                   {taskData.map((taskDataItem) => (
-                    <TableRow
-                      key={taskDataItem.id}
-                      onClick={() => editTask(taskDataItem.id)}
-                    >
+                    <TableRow key={taskDataItem.id}>
                       <TableCell align="left">
                         {taskDataItem.date.year()} /{" "}
                         {String(taskDataItem.date.month() + 1).padStart(2, "0")}{" "}
@@ -473,7 +524,10 @@ const TaskForm: React.FC = () => {
                       <TableCell align="center">
                         [{taskDataItem.task.key}] {taskDataItem.task.title}
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell
+                        align="center"
+                        onClick={() => editTask(taskDataItem.id)}
+                      >
                         <Paper
                           style={{
                             maxHeight: "10vh",
