@@ -294,6 +294,9 @@ const TaskForm: React.FC = () => {
       hours: hours,
     };
     const newTaskData = [...taskData, newTaskDataItem];
+    newTaskData.sort((a, b) => {
+      return a.date.isAfter(b.date) ? 1 : -1;
+    });
     setTaskData(newTaskData);
     localStorage.setItem("GOJIRA.TASKDATA", JSON.stringify(newTaskData));
     setTask(null);
