@@ -390,7 +390,7 @@ const TaskForm: React.FC = () => {
     log("Started task data submission to JIRA");
     for (let taskDataItem of taskData) {
       const date = taskDataItem.date.format("YYYY/MM/DD");
-      const comment = `*Update ${date}:*\n${taskDataItem.workDescriptionMarkdown}`;
+      const comment = `*Update: ${date}*\n${taskDataItem.workDescriptionMarkdown}`;
       await addCommentToJiraItem(taskDataItem.task.key, comment);
       await addWorklogToJiraItem(
         taskDataItem.task.key,
